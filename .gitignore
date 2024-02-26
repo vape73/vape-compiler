@@ -11,3 +11,4 @@ CTestTestfile.cmake
 _deps
 vape-compiler
 **/.DS_Store
+.vscode

@@ -1,9 +1,0 @@
-{
-	"files.associations": {
-		"*.html": "html",
-		"*.scss": "postcss",
-		"deque": "cpp",
-		"stdexcept": "cpp",
-		"vector": "cpp"
-	}
-}

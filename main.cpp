@@ -2,32 +2,57 @@
 #include <vector>
 #include <cassert>
 #include <cstdlib>
-#include "Heap/Heap.h"
+#include "List/Stack.h"
+#include "List/Queue.h"
+#include "List/Deque.h"
 
 int main()
 {
-    Heap heap(2048); // Инициализируем кучу размером 2048 байт
+    Heap heap(1024); // Инициализация кучи с размером 1024 байта
 
-    // Демо-режим
-    auto ptr1 = heap.allocate(100);
-    auto ptr2 = heap.allocate(200);
-    auto ptr3 = heap.allocate(300);
-    auto ptr4 = heap.allocate(400);
-    auto ptr5 = heap.allocate(500);
-
+    // Демонстрация работы со стеком
+    Stack stack(heap, sizeof(int));
+    int a = 1, b = 2, c = 3;
+    stack.add(&a);
+    stack.add(&b);
+    stack.add(&c);
+    stack.log();
     heap.logUsage();
 
-    heap.free(ptr2);
-    heap.free(ptr4);
-    heap.free(ptr3);
-
+    stack.remove(); // Удаление последнего элемента (c)
+    stack.log();
     heap.logUsage();
 
-    auto ptr6 = heap.allocate(1024); // Попытка выделить больше памяти, чем доступно
-    auto ptr7 = heap.allocate(150);
-    auto ptr8 = heap.allocate(150);
-    auto ptr9 = heap.allocate(150);
+    // Демонстрация работы с очередью
+    Queue queue(heap, sizeof(int));
+    queue.add(&a);
+    queue.add(&b);
+    queue.add(&c);
+    queue.log();
+    heap.logUsage();
 
+    queue.remove(); // Удаление первого элемента (a)
+    queue.log();
+    heap.logUsage();
+
+    // Демонстрация работы с деком
+    Deque deque(heap, sizeof(int));
+    deque.addFront(&b); // Добавление в начало
+    deque.addFront(&a); // Добавление в начало
+    deque.addBack(&c);  // Добавление в конец
+    deque.log();
+    heap.logUsage();
+
+    deque.removeFront(); // Удаление из начала (b)
+    deque.log();
+    heap.logUsage();
+
+    deque.removeBack(); // Удаление из конца (c)
+    deque.log();
+    heap.logUsage();
+
+    deque.removeBack(); // Удаление последнего элемента (a), дек пуст
+    deque.log();
     heap.logUsage();
 
     return 0;

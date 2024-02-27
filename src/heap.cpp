@@ -1,9 +1,11 @@
 #include "Heap/Heap.h"
 
-Heap::Heap(size_t size) {
+Heap::Heap(size_t size)
+{
     heapStart = malloc(size); // Используем malloc для выделения памяти
     heapTop = heapStart;
-    if (heapStart == nullptr) {
+    if (heapStart == nullptr)
+    {
         std::cerr << "Failed to allocate heap." << std::endl;
         exit(1);
     }
@@ -11,28 +13,32 @@ Heap::Heap(size_t size) {
     blocks.reserve(size);
 }
 
-Heap::~Heap() {
+Heap::~Heap()
+{
     std::free(heapStart); // Освобождаем всю выделенную память
 }
 
-void **Heap::allocate(size_t size) {
+void **Heap::allocate(size_t size)
+{
     // Проверяем, есть ли достаточно свободного места
-    if (get_free_space() < size) {
+    if (get_free_space() < size)
+    {
         std::cerr << "Heap out of memory." << std::endl;
         return nullptr;
     }
 
     // Проверяем, есть ли подходящий блок для выделения памяти
     auto freeHole = findMinSuitableBlock(size);
-    if (freeHole != blocks.end()) {
+    if (freeHole != blocks.end())
+    {
         splitBlock(freeHole, size);
         freeHole->used = true;
         return &(freeHole->data);
     }
 
-    if (getUnmarkedSpace() < size) {
-        std::cerr << "Heap out of memory." << std::endl;
-        return nullptr;
+    if (getUnmarkedSpace() < size)
+    {
+        compact();
     }
 
     // Выделяем память для нового блока и сохраняем указатель на данные
@@ -44,9 +50,11 @@ void **Heap::allocate(size_t size) {
     return &((blocks.end() - 1)->data);
 }
 
-void Heap::free(void *ptr) {
+void Heap::free(void *ptr)
+{
     auto block = findBlock(ptr);
-    if (block == blocks.end()) {
+    if (block == blocks.end())
+    {
         std::cerr << "Attempt to free unallocated or already freed block."
                   << std::endl;
         return;
@@ -56,22 +64,28 @@ void Heap::free(void *ptr) {
     mergeBlocks(block);
 }
 
-void Heap::logUsage() const {
-    std::cout << "Heap Size: " << heapSize << " bytes" << std::endl;
-    for (const auto &block: blocks) {
+void Heap::logUsage() const
+{
+    std::cout << "Heap Size: " << heapSize << " bytes" << std::endl
+              << "Free space: " << getUnmarkedSpace() << " bytes" << std::endl;
+    for (const auto &block : blocks)
+    {
         std::cout << "Block at " << block.data << " - Size: " << block.size
                   << " bytes - " << (block.used ? "Used" : "Free") << "\n";
     }
 }
 
-size_t Heap::getUnmarkedSpace() {
+size_t Heap::getUnmarkedSpace() const
+{
     return static_cast<char *>(heapStart) + heapSize -
            static_cast<char *>(heapTop);
 }
 
-std::vector<Block>::iterator Heap::findBlock(void *ptr) {
+std::vector<Block>::iterator Heap::findBlock(void *ptr)
+{
     auto it = blocks.begin();
-    for (; it != blocks.end(); ++it) {
+    for (; it != blocks.end(); ++it)
+    {
         if (it->data == ptr && it->used)
             break;
     }
@@ -80,10 +94,13 @@ std::vector<Block>::iterator Heap::findBlock(void *ptr) {
 
 // функция возвращающая свободное место исходя из неразмеченногоместа в
 // конце кучи и неиспользованных блоков
-size_t Heap::get_free_space() {
+size_t Heap::get_free_space() const
+{
     size_t freeSpace = 0;
-    for (const auto &block: blocks) {
-        if (!block.used) {
+    for (const auto &block : blocks)
+    {
+        if (!block.used)
+        {
             freeSpace += block.size;
         }
     }
@@ -91,12 +108,15 @@ size_t Heap::get_free_space() {
     return freeSpace;
 }
 
-std::vector<Block>::iterator Heap::findMinSuitableBlock(size_t size) {
+std::vector<Block>::iterator Heap::findMinSuitableBlock(size_t size)
+{
     auto minBlockIt = blocks.end();
     size_t minSize = std::numeric_limits<size_t>::max();
 
-    for (auto it = blocks.begin(); it != blocks.end(); ++it) {
-        if (!it->used && it->size >= size && it->size < minSize) {
+    for (auto it = blocks.begin(); it != blocks.end(); ++it)
+    {
+        if (!it->used && it->size >= size && it->size < minSize)
+        {
             minSize = it->size;
             minBlockIt = it;
         }
@@ -105,7 +125,8 @@ std::vector<Block>::iterator Heap::findMinSuitableBlock(size_t size) {
     return minBlockIt;
 }
 
-void Heap::splitBlock(std::vector<Block>::iterator blockIt, size_t size) {
+void Heap::splitBlock(std::vector<Block>::iterator blockIt, size_t size)
+{
     void *newBlockData = static_cast<char *>(blockIt->data) + size;
     size_t newSize = blockIt->size - size;
 
@@ -118,20 +139,52 @@ void Heap::splitBlock(std::vector<Block>::iterator blockIt, size_t size) {
 
 // Функция для объединения двух смежных свободных блоков вокруг указанного
 
-void Heap::mergeBlocks(std::vector<Block>::iterator blockIt) {
+void Heap::mergeBlocks(std::vector<Block>::iterator blockIt)
+{
     auto nextIt = blockIt + 1;
-    if (nextIt != blocks.end() && !nextIt->used) {
+    if (nextIt != blocks.end() && !nextIt->used)
+    {
         blockIt->size += nextIt->size;
         blocks.erase(nextIt);
     }
 
-    if (blockIt != blocks.begin()) {
+    if (blockIt != blocks.begin())
+    {
 
         auto prevIt = blockIt - 1;
-        if (!prevIt->used) {
+        if (!prevIt->used)
+        {
             blockIt->data = prevIt->data;
             blockIt->size += prevIt->size;
             blocks.erase(prevIt);
         }
     }
+}
+
+void Heap::compact()
+{
+    void *currentPos = heapStart; // Начало области для перемещения блоков
+
+    // Перемещаем используемые блоки в начало памяти
+    for (auto &block : blocks)
+    {
+        if (block.used)
+        {
+            if (block.data != currentPos)
+            {                                                     // Если блок не в начале, перемещаем его
+                std::memmove(currentPos, block.data, block.size); // Копируем данные блока
+                block.data = currentPos;                          // Обновляем указатель на данные блока
+            }
+            currentPos = static_cast<char *>(currentPos) + block.size; // Сдвигаем позицию для следующего блока
+        }
+    }
+
+    // Удаляем все неиспользуемые блоки из вектора blocks
+    blocks.erase(std::remove_if(blocks.begin(), blocks.end(),
+                                [](const Block &block)
+                                { return !block.used; }),
+                 blocks.end());
+
+    // Обновляем heapTop после перемещения блоков
+    heapTop = currentPos;
 }

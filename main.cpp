@@ -23,10 +23,11 @@ int main()
 
     heap.logUsage();
 
-    auto ptr6 = heap.allocate(1024); // Попытка выделить больше памяти, чем доступно
+    auto ptr6 = heap.allocate(1024);
     auto ptr7 = heap.allocate(150);
     auto ptr8 = heap.allocate(150);
-    auto ptr9 = heap.allocate(150);
+    auto ptr9 = heap.allocate(150);// Попытка выделить больше памяти, чем доступно
+    auto ptr10 = heap.allocate(100);
 
     heap.logUsage();
 

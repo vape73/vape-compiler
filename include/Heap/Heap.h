@@ -6,7 +6,8 @@
 #include <vector>
 #include "Block.h"
 
-class Heap {
+class Heap
+{
 public:
     explicit Heap(size_t size);
 
@@ -22,23 +23,23 @@ private:
     void *heapStart;
     size_t heapSize;
     void *heapTop;
-    std::vector <Block> blocks;
+    std::vector<Block> blocks;
 
-    size_t getUnmarkedSpace();
+    size_t getUnmarkedSpace() const;
 
     std::vector<Block>::iterator findBlock(void *ptr);
 
-    size_t get_free_space();
+    size_t get_free_space() const;
 
     std::vector<Block>::iterator findMinSuitableBlock(size_t size);
 
     void splitBlock(std::vector<Block>::iterator
-    blockIt,
-    size_t size
-    );
+                        blockIt,
+                    size_t size);
 
     void mergeBlocks(std::vector<Block>::iterator blockIt);
 
+    void compact();
 };
 
 #endif // HEAP_H

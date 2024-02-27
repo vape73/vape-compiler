@@ -13,3 +13,5 @@ vape-compiler
 **/.DS_Store
 .idea/
 cmake-build-debug/
+build/
+.vscode/

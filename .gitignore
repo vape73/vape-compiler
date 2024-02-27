@@ -11,3 +11,5 @@ CTestTestfile.cmake
 _deps
 vape-compiler
 **/.DS_Store
+.idea/
+cmake-build-debug/

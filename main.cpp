@@ -17,9 +17,9 @@ int main()
 
     heap.logUsage();
 
-    heap.free(ptr2);
-    heap.free(ptr4);
-    heap.free(ptr3);
+    heap.free(*ptr2);
+    heap.free(*ptr4);
+    heap.free(*ptr3);
 
     heap.logUsage();
 

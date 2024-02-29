@@ -1,25 +1,67 @@
-#include "List/Stack.h"
+#include "structures.h"
 
-Stack::Stack(Heap &heap, size_t elementSize) : List(heap, elementSize) {}
-
-void Stack::add(const void *element)
+Node **Stack::allocate_node()
 {
-    void *block = heap.allocate(elementSize);
-    memcpy(block, element, elementSize);
-    elements.push_back(block);
-}
-
-void Stack::remove()
-{
-    if (!elements.empty())
+    if (auto ptr = heap->allocate(sizeof(Node)))
     {
-        void *element = elements.back();
-        elements.pop_back();
-        heap.free(element);
+        return reinterpret_cast<Node **>(ptr);
     }
+
+    return nullptr;
 }
 
-void Stack::log() const
+Node **Stack::new_stack(int data)
 {
-    std::cout << "Stack contains " << elements.size() << " elements." << std::endl;
+    if (auto head = allocate_node())
+    {
+
+        (*head)->data = data;
+        (*head)->next = nullptr;
+
+        return head;
+    }
+
+    return nullptr;
+}
+
+Node **Stack::push(Node **head, int data)
+{
+    log(head);
+    if (auto new_node = allocate_node())
+    {
+        (*new_node)->data = data;
+        (*new_node)->next = head;
+
+        log(new_node);
+        return new_node;
+    }
+    return nullptr;
+}
+
+Node **Stack::pop(Node **head)
+{
+    log(head);
+    auto new_head = (*head)->next;
+    heap->free(*head);
+    
+    log(new_head);
+    return new_head;
+}
+
+void Stack::log(Node **head)
+{
+    if (head == nullptr || *head == nullptr)
+    {
+        std::cout << "empty stack!\n";
+    }
+    auto q = head;
+
+    std::cout << "STACK: ";
+
+    while (q)
+    {
+        std::cout << (*q)->data << " ";
+        q = (*q)->next;
+    }
+    std::cout << std::endl;
 }

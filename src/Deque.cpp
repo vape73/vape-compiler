@@ -1,53 +1,111 @@
-#include "List/Deque.h"
-#include <iostream>
+#include "structures.h"
 
-Deque::Deque(Heap &heap, size_t elementSize) : List(heap, elementSize) {}
+DequeNode **Deque::allocate_node() {
+  heap->logUsage();
+  if (auto ptr = heap->allocate(sizeof(DequeNode))) {
+    return reinterpret_cast<DequeNode **>(ptr);
+  }
 
-void Deque::addFront(const void *element)
-{
-    void *block = heap.allocate(elementSize);
-    memcpy(block, element, elementSize);
-    elements.push_front(block);
+  return nullptr;
 }
 
-void Deque::addBack(const void *element)
-{
-    void *block = heap.allocate(elementSize);
-    memcpy(block, element, elementSize);
-    elements.push_back(block);
+DequeNode **Deque::new_deque(int data) {
+  if (auto head = allocate_node()) {
+
+    (*head)->data = data;
+    (*head)->next = nullptr;
+    (*head)->prev = nullptr;
+    return head;
+  }
+
+  return nullptr;
 }
 
-void Deque::removeFront()
-{
-    if (!elements.empty())
-    {
-        void *element = elements.front();
-        elements.pop_front();
-        heap.free(element);
+DequeNode **Deque::push_front(DequeNode **head, int data) {
+  log(head);
+  if (auto new_node = allocate_node()) {
+    (*new_node)->data = data;
+
+    if (head == nullptr || *head == nullptr) {
+      (*new_node)->prev = new_node;
+      (*new_node)->next = new_node;
+      log(new_node);
+      return new_node;
     }
+
+    (*new_node)->next = head;
+    (*new_node)->prev = (*head)->prev;
+    (*(*head)->prev)->next = new_node;
+    (*head)->prev = new_node;
+
+    log(new_node);
+    return new_node;
+  }
 }
 
-void Deque::removeBack()
-{
-    if (!elements.empty())
-    {
-        void *element = elements.back();
-        elements.pop_back();
-        heap.free(element);
+DequeNode **Deque::push_back(DequeNode **head, int data) {
+  log(head);
+  if (auto new_node = allocate_node()) {
+    (*new_node)->data = data;
+
+    if (*head == nullptr) {
+      (*new_node)->prev = new_node;
+      (*new_node)->next = new_node;
+      log(new_node);
+      return new_node;
     }
+
+    (*new_node)->next = head;
+    (*new_node)->prev = (*head)->prev;
+    (*(*head)->prev)->next = new_node;
+    (*head)->prev = new_node;
+
+    log(head);
+    return head;
+  }
 }
 
-void Deque::add(const void *element)
-{
-    throw "not implemented method";
-};
+DequeNode **Deque::pop_front(DequeNode **head) {
+  log(head);
+  if (*head == nullptr || (*head)->next == head) {
+    log(nullptr);
+    return nullptr;
+  }
 
-void Deque::remove()
-{
-    throw "not implemented method";
-};
+  auto new_head = (*head)->next;
+  (*(*head)->prev)->next = (*head)->next;
+  (*(*head)->next)->prev = (*head)->prev;
+  heap->free(*head);
 
-void Deque::log() const
-{
-    std::cout << "Deque contains " << elements.size() << " elements." << std::endl;
+  log(new_head);
+  return new_head;
+}
+
+DequeNode **Deque::pop_back(DequeNode **head) {
+  log(head);
+  if (*head == nullptr || (*head)->next == head) {
+    log(nullptr);
+    return nullptr;
+  }
+
+  (*head)->prev = (*(*head)->prev)->prev;
+  (*(*head)->prev)->next = head;
+  heap->free((*head)->prev);
+
+  log(head);
+  return head;
+}
+
+void Deque::log(DequeNode **head) {
+  if (head == nullptr || *head == nullptr) {
+    std::cout << "empty deque!\n";
+  }
+  auto q = head;
+
+  std::cout << "DEQUE: ";
+  while (q) {
+    std::cout << (*q)->data << " ";
+    q = (*q)->next;
+  }
+  std::cout << std::endl;
 }

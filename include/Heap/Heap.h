@@ -13,6 +13,9 @@ public:
 
     void **allocate(size_t size);
 
+    template <typename T>
+    T **allocate();
+
     void free(void *ptr);
 
     void logUsage() const;

@@ -13,8 +13,8 @@ DequeNode **Deque::new_deque(int data) {
   if (auto head = allocate_node()) {
 
     (*head)->data = data;
-    (*head)->next = nullptr;
-    (*head)->prev = nullptr;
+    (*head)->next = head;
+    (*head)->prev = head;
     return head;
   }
 
@@ -41,6 +41,7 @@ DequeNode **Deque::push_front(DequeNode **head, int data) {
     log(new_node);
     return new_node;
   }
+  return nullptr;
 }
 
 DequeNode **Deque::push_back(DequeNode **head, int data) {
@@ -63,6 +64,7 @@ DequeNode **Deque::push_back(DequeNode **head, int data) {
     log(head);
     return head;
   }
+  return nullptr;
 }
 
 DequeNode **Deque::pop_front(DequeNode **head) {
@@ -103,9 +105,9 @@ void Deque::log(DequeNode **head) {
   auto q = head;
 
   std::cout << "DEQUE: ";
-  while (q) {
+  do {
     std::cout << (*q)->data << " ";
     q = (*q)->next;
-  }
+  } while (q != head);
   std::cout << std::endl;
 }

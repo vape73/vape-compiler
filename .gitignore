@@ -15,3 +15,8 @@ vape-compiler
 cmake-build-debug/
 build/
 .vscode/
+.vscode
+.cmake/
+.ninja_deps
+.ninja_log
+build.ninja

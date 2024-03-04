@@ -2,34 +2,28 @@
 #include <vector>
 #include <cassert>
 #include <cstdlib>
-#include "Heap/Heap.h"
+#include "structures.h"
 
 int main()
 {
-    Heap heap(2048); // Инициализируем кучу размером 2048 байт
+    auto heap = new Heap(1024);
+    auto stack = new Stack(heap);
+    auto queue = new Queue(heap);
+    auto deque = new Deque(heap);
 
-    // Демо-режим
-    auto ptr1 = heap.allocate(100);
-    auto ptr2 = heap.allocate(200);
-    auto ptr3 = heap.allocate(300);
-    auto ptr4 = heap.allocate(400);
-    auto ptr5 = heap.allocate(500);
+//    auto stack_head = stack->new_stack(1);
+//    stack_head = stack->push(stack_head, 2);
+//    stack_head = stack->push(stack_head, 3);
+//
+//    auto queue_head = queue->new_queue(1);
+//    queue_head = queue->push(queue_head, 2);
+//    queue_head = queue->push(queue_head, 3);
+//
+//    stack_head = stack->pop(stack_head);
 
-    heap.logUsage();
+    auto deque_head = deque->new_deque(1);
+    deque_head = deque->push_front(deque_head, 2);
+    // deque_head = deque->push_back(deque_head, 3);
 
-    heap.free(*ptr2);
-    heap.free(*ptr4);
-    heap.free(*ptr3);
 
-    heap.logUsage();
-
-    auto ptr6 = heap.allocate(1024);
-    auto ptr7 = heap.allocate(150);
-    auto ptr8 = heap.allocate(150);
-    auto ptr9 = heap.allocate(150);// Попытка выделить больше памяти, чем доступно
-    auto ptr10 = heap.allocate(100);
-
-    heap.logUsage();
-
-    return 0;
 }

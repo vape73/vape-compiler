@@ -14,6 +14,8 @@ int main()
 
     std::cout << (*hash_table)->get("one") << std::endl;
     std::cout << (*hash_table)->get("two") << std::endl;
+    (*hash_table)->remove("two");
+    std::cout << (*hash_table)->get("two") << std::endl;
 
     heap->free(raw_hash_table);
 

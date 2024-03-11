@@ -6,6 +6,14 @@
 #include <iostream>
 #include "Heap/Heap.h"
 
+class KeyNotFoundException : public std::exception {
+public:
+    const char* what() const noexcept override {
+        return "Key not found in hash table";
+    }
+};
+
+
 template <typename T>
 struct HashTableElement
 {
@@ -40,12 +48,27 @@ struct HashTable
     {
         if (count / capacity * 100 >= FILL_FACTOR)
         {
-            void **new_elements = heap->allocate(sizeof(2 * capacity * sizeof(HashTableElement<T>)));
-            memcpy(*new_elements, *elements, capacity * sizeof(HashTableElement<T>));
+            int new_capacity = 2 * capacity;
+            void **new_elements = heap->allocate(sizeof(new_capacity * sizeof(HashTableElement<T>)));
+            HashTableElement<T> **new_elements_ptr = reinterpret_cast<HashTableElement<T> **>(new_elements);
+
+            for (int i = 0; i < capacity; ++i)
+            {
+                if ((*elements)[i].key != "")
+                {
+                    long hashed_key = hash((*elements)[i].key) % new_capacity;
+                    while ((*new_elements_ptr)[hashed_key].key != "")
+                    {
+                        hashed_key = (hashed_key + 1) % new_capacity;
+                    }
+                    (*new_elements_ptr)[hashed_key] = (*elements)[i];
+                }
+            }
+
             heap->free(*elements);
-            elements = reinterpret_cast<HashTableElement<T> **>(new_elements);
-            ;
-            capacity *= 2;
+
+            elements = new_elements_ptr;
+            capacity = new_capacity;
         }
     }
 
@@ -85,8 +108,44 @@ struct HashTable
                 if ((*elements)[i].key == key)
                     return (*elements)[i].value;
             }
-            return NULL;
+            throw KeyNotFoundException();
         }
+    }
+
+    void remove(std::string key)
+    {
+        long hashed_key = hash(key);
+        if ((*elements)[hashed_key].key == key)
+        {
+            (*elements)[hashed_key].key = "";
+            (*elements)[hashed_key].value = T();
+            count--;
+        }
+        else
+        {
+            for (int i = hashed_key + 1; i < hashed_key + capacity; i++)
+            {
+                if (i == hashed_key)
+                    break;
+                if ((*elements)[i].key == key)
+                {
+                    (*elements)[i].key = "";
+                    (*elements)[i].value = T();
+                    count--;
+                    break;
+                }
+            }
+        }
+    }
+
+    void clear()
+    {
+        for (int i = 0; i < capacity; i++)
+        {
+            (*elements)[i].key = "";
+            (*elements)[i].value = T();
+        }
+        count = 0;
     }
 };
 

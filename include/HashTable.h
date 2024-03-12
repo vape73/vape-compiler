@@ -6,13 +6,14 @@
 #include <iostream>
 #include "Heap/Heap.h"
 
-class KeyNotFoundException : public std::exception {
+class KeyNotFoundException : public std::exception
+{
 public:
-    const char* what() const noexcept override {
+    const char *what() const noexcept override
+    {
         return "Key not found in hash table";
     }
 };
-
 
 template <typename T>
 struct HashTableElement
@@ -34,7 +35,7 @@ struct HashTable
         long sum = 0;
         for (int i = 0; i < key.length(); i++)
             sum += key[i] * (i + 1);
-        return sum;
+        return sum % capacity;
     }
 
     void init(Heap *input_heap)
@@ -46,35 +47,36 @@ struct HashTable
 
     void realloc()
     {
-        if (count / capacity * 100 >= FILL_FACTOR)
+        int new_capacity = 2 * capacity;
+        void **new_elements = heap->allocate(sizeof(new_capacity * sizeof(HashTableElement<T>)));
+        HashTableElement<T> **new_elements_ptr = reinterpret_cast<HashTableElement<T> **>(new_elements);
+
+        for (int i = 0; i < capacity; ++i)
         {
-            int new_capacity = 2 * capacity;
-            void **new_elements = heap->allocate(sizeof(new_capacity * sizeof(HashTableElement<T>)));
-            HashTableElement<T> **new_elements_ptr = reinterpret_cast<HashTableElement<T> **>(new_elements);
-
-            for (int i = 0; i < capacity; ++i)
+            if ((*elements)[i].key != "")
             {
-                if ((*elements)[i].key != "")
+                long hashed_key = hash((*elements)[i].key) % new_capacity;
+                while ((*new_elements_ptr)[hashed_key].key != "")
                 {
-                    long hashed_key = hash((*elements)[i].key) % new_capacity;
-                    while ((*new_elements_ptr)[hashed_key].key != "")
-                    {
-                        hashed_key = (hashed_key + 1) % new_capacity;
-                    }
-                    (*new_elements_ptr)[hashed_key] = (*elements)[i];
+                    hashed_key = (hashed_key + 1) % new_capacity;
                 }
+                (*new_elements_ptr)[hashed_key] = (*elements)[i];
             }
-
-            heap->free(*elements);
-
-            elements = new_elements_ptr;
-            capacity = new_capacity;
         }
+
+        heap->free(*elements);
+
+        elements = new_elements_ptr;
+        capacity = new_capacity;
     }
 
     void set(std::string key, T value)
     {
-        realloc();
+        if (count / capacity * 100 >= FILL_FACTOR)
+        {
+            realloc();
+        }
+
         long hashed_key = hash(key);
         if ((*elements)[hashed_key].key != "")
         {
@@ -125,8 +127,6 @@ struct HashTable
         {
             for (int i = hashed_key + 1; i < hashed_key + capacity; i++)
             {
-                if (i == hashed_key)
-                    break;
                 if ((*elements)[i].key == key)
                 {
                     (*elements)[i].key = "";

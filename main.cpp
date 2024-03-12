@@ -10,14 +10,17 @@ int main()
     (*hash_table)->init(heap);
 
     (*hash_table)->set("one", 1);
+    (*hash_table)->set("eno", 5);
     (*hash_table)->set("two", 2);
 
     std::cout << (*hash_table)->get("one") << std::endl;
+    std::cout << (*hash_table)->get("eno") << std::endl;
     std::cout << (*hash_table)->get("two") << std::endl;
+
     (*hash_table)->remove("two");
     std::cout << (*hash_table)->get("two") << std::endl;
 
-    heap->free(raw_hash_table);
+    heap->free(*raw_hash_table);
 
     delete heap;
 

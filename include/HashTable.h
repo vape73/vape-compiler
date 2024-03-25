@@ -103,7 +103,8 @@ struct HashTable
                 if ((*elements)[i].key == key)
                     return (*elements)[i].value;
             }
-            std::cerr << "ERROR: key " << key << " not found\n";
+            // std::cerr << "ERROR: key " << key << " not found\n";
+            throw "Unexpected key";
         }
 
         return T();

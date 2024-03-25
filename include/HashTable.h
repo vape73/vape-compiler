@@ -6,15 +6,6 @@
 #include <iostream>
 #include "Heap/Heap.h"
 
-class KeyNotFoundException : public std::exception
-{
-public:
-    const char *what() const noexcept override
-    {
-        return "Key not found in hash table";
-    }
-};
-
 template <typename T>
 struct HashTableElement
 {
@@ -27,8 +18,8 @@ struct HashTable
 {
     Heap *heap;
     HashTableElement<T> **elements;
-    int capacity = 32;
-    int count = 0;
+    int capacity;
+    int count;
 
     long hash(std::string key)
     {
@@ -41,6 +32,8 @@ struct HashTable
     void init(Heap *input_heap)
     {
         heap = input_heap;
+        capacity = 32;
+        count = 0;
         void **raw_elements = heap->allocate(sizeof(capacity * sizeof(HashTableElement<T>)));
         elements = reinterpret_cast<HashTableElement<T> **>(raw_elements);
     }
@@ -110,8 +103,11 @@ struct HashTable
                 if ((*elements)[i].key == key)
                     return (*elements)[i].value;
             }
-            throw KeyNotFoundException();
+            // std::cerr << "ERROR: key " << key << " not found\n";
+            throw "Unexpected key";
         }
+
+        return T();
     }
 
     void remove(std::string key)
@@ -146,6 +142,26 @@ struct HashTable
             (*elements)[i].value = T();
         }
         count = 0;
+    }
+
+    void log()
+    {
+        if (!count)
+        {
+            std::cout << "EMPTY HASH TABLE" << std::endl
+                      << std::endl;
+            return;
+        }
+        std::cout << "HASH TABLE HAS " << count << " ELEMENTS:" << std::endl;
+        for (int i = 0; i < capacity; i++)
+        {
+            if ((*elements)[i].key != "")
+            {
+                std::cout << "KEY: " << (*elements)[i].key << ", VALUE: " << (*elements)[i].value << std::endl;
+            }
+        }
+        std::cout << std::endl
+                  << std::endl;
     }
 };
 
